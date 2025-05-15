@@ -5,7 +5,7 @@
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:559:1:etharp_cleanup_netif	16	static
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:583:1:etharp_find_addr	24	static
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:612:1:etharp_get_entry	24	static
-../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:641:1:etharp_input	64	static
+../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:641:1:etharp_input	56	static
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:933:1:etharp_query	56	static
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:791:1:etharp_output	40	static
 ../Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c:1198:1:etharp_request	24	static

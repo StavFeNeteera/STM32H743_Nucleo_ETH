@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 /* ETH_CODE: add lwiperf, see comment in StartDefaultTask function */
 #include "lwip/apps/lwiperf.h"
+#include "lwip/netif.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -384,8 +385,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  printf("Hello World!\r\n");
-
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
@@ -407,6 +406,14 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    struct netif *netif = netif_default;
+    if (netif != NULL && netif_is_up(netif)) {
+      printf("IP Address: %d.%d.%d.%d\r\n",
+             ip4_addr1(&netif->ip_addr),
+             ip4_addr2(&netif->ip_addr),
+             ip4_addr3(&netif->ip_addr),
+             ip4_addr4(&netif->ip_addr));
+    }
     osDelay(1000);
   }
   /* USER CODE END 5 */

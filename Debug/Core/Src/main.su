@@ -1,7 +1,7 @@
-../Core/Src/main.c:385:6:StartDefaultTask	8	static
-../Core/Src/main.c:60:5:__io_putchar	16	static
-../Core/Src/main.c:70:5:_write	32	static
-../Core/Src/main.c:196:6:SystemClock_Config	136	static,ignoring_inline_asm
-../Core/Src/main.c:101:5:main	56	static,ignoring_inline_asm
-../Core/Src/main.c:475:6:HAL_TIM_PeriodElapsedCallback	0	static
-../Core/Src/main.c:493:6:Error_Handler	0	static,ignoring_inline_asm
+../Core/Src/main.c:386:6:StartDefaultTask	24	static
+../Core/Src/main.c:61:5:__io_putchar	16	static
+../Core/Src/main.c:71:5:_write	32	static
+../Core/Src/main.c:197:6:SystemClock_Config	136	static,ignoring_inline_asm
+../Core/Src/main.c:102:5:main	56	static,ignoring_inline_asm
+../Core/Src/main.c:482:6:HAL_TIM_PeriodElapsedCallback	0	static
+../Core/Src/main.c:500:6:Error_Handler	0	static,ignoring_inline_asm
