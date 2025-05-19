@@ -374,7 +374,7 @@ void StartDefaultTask(void *argument)
 {
   /* Initialize application */
   app_init();
-  
+
   /* Run application task */
   app_run(argument);
 }

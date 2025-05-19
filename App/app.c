@@ -1,52 +1,65 @@
 #include "app.h"
 #include <stdio.h>
-#include "lwip/tcp.h"
+#include "lwip/apps/mqtt.h"
 #include "lwip/ip_addr.h"
+#include "lwip/netif.h"
 #include "lwip/tcpip.h"
 
-#define TCP_SERVER_PORT 1234
-static struct tcp_pcb *tcp_server_pcb = NULL;
+#define MQTT_BROKER_IP "10.5.1.95"
+#define MQTT_BROKER_PORT 1883
 
-static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
-{
-    if (p != NULL) {
-        printf("Message received: %.*s\r\n", p->len, (char*)p->payload);
-        tcp_recved(tpcb, p->len);
-        pbuf_free(p);
-    }
-    return ERR_OK;
+static mqtt_client_t *mqtt_client;
+
+static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) {
+    printf("MQTT message on topic: %s, length: %lu\r\n", topic, tot_len);
 }
 
-static err_t tcp_server_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
-{
-    printf("TCP connection made\r\n");
-    tcp_recv(newpcb, tcp_server_recv);
-    return ERR_OK;
+static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
+    printf("MQTT data: %.*s\r\n", len, data);
 }
 
-void tcp_server_init(void)
-{
-    printf("Trying to set TCP server\r\n");
-    tcp_server_pcb = tcp_new();
-    if (tcp_server_pcb != NULL) {
-        err_t err = tcp_bind(tcp_server_pcb, IP_ADDR_ANY, TCP_SERVER_PORT);
-        if (err == ERR_OK) {
-            tcp_server_pcb = tcp_listen(tcp_server_pcb);
-            tcp_accept(tcp_server_pcb, tcp_server_accept);
-            printf("TCP is up, listening on port %d\r\n", TCP_SERVER_PORT);
-        } else {
-            printf("TCP bind failed\r\n");
-        }
+static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
+    if (status == MQTT_CONNECT_ACCEPTED) {
+        printf("MQTT connected!\r\n");
+        mqtt_sub_unsub(client, "test/topic", 0, NULL, NULL, 1);
+
+        // You can subscribe or publish here
     } else {
-        printf("TCP PCB allocation failed\r\n");
+        printf("MQTT connection failed, status: %d\r\n", status);
     }
 }
+
+void mqtt_start(void) {
+    printf("mqtt_start called\r\n");
+
+    ip_addr_t broker_ip;
+    err_t err;
+    ipaddr_aton(MQTT_BROKER_IP, &broker_ip);
+
+    struct mqtt_connect_client_info_t ci;
+    memset(&ci, 0, sizeof(ci));
+    ci.client_id = "stm32_client";
+    ci.keep_alive = 60;
+
+    mqtt_client = mqtt_client_new();
+    if (mqtt_client != NULL) {
+        mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, NULL);
+        printf("Connecting to MQTT broker...\r\n");
+        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_cb, 0, &ci);
+    } else {
+        printf("Failed to create MQTT client\r\n");
+    }
+}
+
+
 
 void app_init(void)
 {
-    /* init code for LWIP */
+    printf("App init start\r\n");
     MX_LWIP_Init();
-    tcpip_callback((tcpip_callback_fn)tcp_server_init, NULL);
+    printf("LWIP Init done\r\n");
+//    tcpip_callback((tcpip_callback_fn)mqtt_start, NULL); // Comment this out for now
+//    printf("mqtt_start scheduled\r\n");
 }
 
 void app_run(void *argument)
@@ -68,6 +81,8 @@ void app_run(void *argument)
     //  UNLOCK_TCPIP_CORE();
 
     /* Infinite loop */
+    static uint8_t mqtt_started = 0;
+
     for(;;)
     {
         struct netif *netif = netif_default;
@@ -77,13 +92,20 @@ void app_run(void *argument)
                    ip4_addr2(&netif->ip_addr),
                    ip4_addr3(&netif->ip_addr),
                    ip4_addr4(&netif->ip_addr));
+            if (!mqtt_started && !ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+	            mqtt_started = 1;
+				tcpip_callback((tcpip_callback_fn)mqtt_start, NULL);
+			    printf("mqtt_start scheduled\r\n");
+
+            }
         }
 
         /* Toggle all LEDs using direct GPIO pins */
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // LED1 - Green
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);  // LED2 - Blue
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // LED3 - Red
-        
+
+
         osDelay(1000);
     }
 }
