@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+the device uses stm32h743zi chip. using nucleo board for programming. you are a master embedded software engineer. im using a windows computer and the stm32cubeide.
+
+we are focusing on mqtt setup on the device 
