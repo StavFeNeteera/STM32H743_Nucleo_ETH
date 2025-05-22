@@ -138,7 +138,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello World- changed IP\n");
+  printf("Hello World- debug mqtt_incoming_publish_cb\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */

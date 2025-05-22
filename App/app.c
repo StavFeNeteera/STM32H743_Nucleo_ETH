@@ -11,6 +11,7 @@
 static mqtt_client_t *mqtt_client;
 
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) {
+	printf("got in mqtt_incoming_publish_cb\r\n");
     printf("MQTT message on topic: %s, length: %lu\r\n", topic, tot_len);
 }
 

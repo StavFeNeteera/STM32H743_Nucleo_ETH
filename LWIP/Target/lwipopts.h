@@ -120,7 +120,8 @@
 /* ETH_CODE: first 2 macros solve errno issue with GCC 10 and ST LwIP
  * LWIPERF_CHECK_RX_DATA enables data check for iperf. Removing it might improve performance.
  */
-
+#define LWIP_DEBUG                   1 //stavF
+#define MQTT_DEBUG                   LWIP_DBG_ON //stavF
 #undef LWIP_PROVIDE_ERRNO
 #define LWIP_ERRNO_STDINCLUDE
 #define LWIPERF_CHECK_RX_DATA 1
