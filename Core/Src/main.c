@@ -372,11 +372,17 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
+  /* init code for LWIP */
+  MX_LWIP_Init();
+  /* USER CODE BEGIN 5 */
+  printf("LWIP Init done\r\n");
+
   /* Initialize application */
   app_init();
-
   /* Run application task */
   app_run(argument);
+
+  /* USER CODE END 5 */
 }
 
  /* MPU Configuration */

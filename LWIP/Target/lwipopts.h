@@ -60,7 +60,7 @@
 /*----- Default Value for H7 devices: 0x30004000 -----*/
 #define LWIP_RAM_HEAP_POINTER 0x30020000
 /*----- Value in opt.h for MEMP_NUM_SYS_TIMEOUT: (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + (PPP_SUPPORT*6*MEMP_NUM_PPP_PCB) + (LWIP_IPV6 ? (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD) : 0)) -*/
-#define MEMP_NUM_SYS_TIMEOUT 10
+#define MEMP_NUM_SYS_TIMEOUT 5
 /*----- Value supported for H7 devices: 1 -----*/
 #define LWIP_SUPPORT_CUSTOM_PBUF 1
 /*----- Value in opt.h for LWIP_ETHERNET: LWIP_ARP || PPPOE_SUPPORT -*/
@@ -120,6 +120,11 @@
 /* ETH_CODE: first 2 macros solve errno issue with GCC 10 and ST LwIP
  * LWIPERF_CHECK_RX_DATA enables data check for iperf. Removing it might improve performance.
  */
+
+ //stavF
+#undef MEMP_NUM_SYS_TIMEOUT
+#define MEMP_NUM_SYS_TIMEOUT 10  // to get rid of error: Assertion "sys_timeout: timeout != NULL, pool MEMP_SYS_TIMEOUT is empty" failed
+
 #define LWIP_DEBUG                   1 //stavF
 #define MQTT_DEBUG                   LWIP_DBG_ON //stavF
 #undef LWIP_PROVIDE_ERRNO

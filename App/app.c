@@ -80,10 +80,7 @@ void mqtt_start(void) {
 
 void app_init(void)
 {
-    printf("App init start\r\n");
-    MX_LWIP_Init();
-    printf("LWIP Init done\r\n");
-    
+
     /* Register callback for network interface status changes */
     LOCK_TCPIP_CORE();
     netif_set_status_callback(netif_default, netif_status_callback);
