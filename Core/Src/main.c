@@ -138,7 +138,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello World\n");
+  printf("Hello World- changed IP\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */

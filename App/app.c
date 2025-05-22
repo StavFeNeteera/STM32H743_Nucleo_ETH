@@ -5,7 +5,7 @@
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
 
-#define MQTT_BROKER_IP "192.168.1.112"
+#define MQTT_BROKER_IP "10.5.1.95"
 #define MQTT_BROKER_PORT 1883
 
 static mqtt_client_t *mqtt_client;
@@ -23,9 +23,35 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
         printf("MQTT connected!\r\n");
         mqtt_sub_unsub(client, "test/topic", 0, NULL, NULL, 1);
 
-        // You can subscribe or publish here
+        // Publish a message to the broker
+        const char *message = "Hello from STM32!";
+        err_t err = mqtt_publish(client, "test/topic", message, strlen(message), 0, 0, NULL, NULL);
+        if (err == ERR_OK) {
+            printf("Message published successfully\r\n");
+        } else {
+            printf("Failed to publish message, error: %d\r\n", err);
+        }
     } else {
         printf("MQTT connection failed, status: %d\r\n", status);
+    }
+}
+
+static void mqtt_start_from_tcpip(void *arg)
+{
+    printf("Starting MQTT connection from TCP/IP thread\r\n");
+    mqtt_start();
+}
+
+static void netif_status_callback(struct netif *netif)
+{
+    if (netif_is_up(netif) && !ip4_addr_isany_val(*netif_ip4_addr(netif))) {
+        char ip_str[16];
+        ipaddr_ntoa_r(&netif->ip_addr, ip_str, sizeof(ip_str));
+        
+        printf("IP address acquired: %s\n", ip_str);
+        
+        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", MQTT_BROKER_IP, MQTT_BROKER_PORT);
+        tcpip_callback(mqtt_start_from_tcpip, NULL);
     }
 }
 
@@ -56,8 +82,12 @@ void app_init(void)
     printf("App init start\r\n");
     MX_LWIP_Init();
     printf("LWIP Init done\r\n");
-    tcpip_callback((tcpip_callback_fn)mqtt_start, NULL);
-    printf("mqtt_start scheduled\r\n");
+    
+    /* Register callback for network interface status changes */
+    LOCK_TCPIP_CORE();
+    netif_set_status_callback(netif_default, netif_status_callback);
+    UNLOCK_TCPIP_CORE();
+    printf("Waiting for network interface to be ready...\r\n");
 }
 
 void app_run(void *argument)
@@ -79,25 +109,8 @@ void app_run(void *argument)
     //  UNLOCK_TCPIP_CORE();
 
     /* Infinite loop */
-    static uint8_t mqtt_started = 0;
-
     for(;;)
     {
-        struct netif *netif = netif_default;
-        if (netif != NULL && netif_is_up(netif)) {
-            printf("Current IP Address: %d.%d.%d.%d\r\n",
-                   ip4_addr1(&netif->ip_addr),
-                   ip4_addr2(&netif->ip_addr),
-                   ip4_addr3(&netif->ip_addr),
-                   ip4_addr4(&netif->ip_addr));
-            
-            if (!mqtt_started && !ip4_addr_isany_val(*netif_ip4_addr(netif))) {
-                printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", MQTT_BROKER_IP, MQTT_BROKER_PORT);
-                mqtt_started = 1;
-                tcpip_callback((tcpip_callback_fn)mqtt_start, NULL);
-            }
-        }
-
         /* Toggle all LEDs using direct GPIO pins */
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // LED1 - Green
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);  // LED2 - Blue

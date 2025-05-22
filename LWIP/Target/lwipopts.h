@@ -125,6 +125,9 @@
 #define LWIP_ERRNO_STDINCLUDE
 #define LWIPERF_CHECK_RX_DATA 1
 
+/* Enable netif status callback */
+#define LWIP_NETIF_STATUS_CALLBACK 1
+
 /* ETH_CODE: macro and prototypes for proper (hopefuly?)
  * multithreading support
  */

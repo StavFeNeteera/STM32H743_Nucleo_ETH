@@ -1,8 +1,10 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
+---
 ---
 the device uses stm32h743zi chip. using nucleo board for programming. you are a master embedded software engineer. im using a windows computer and the stm32cubeide.
-
 we are focusing on mqtt setup on the device 
+
+everytime you make a change to the code. update the "Hello world" message with the most recent code change in short.
