@@ -25,7 +25,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
         mqtt_sub_unsub(client, "test/topic", 0, NULL, NULL, 1);
 
         // Publish a message to the broker
-        const char *message = "Hello from STM32!";
+        const char *message = "Hello from STM32!!!";
         err_t err = mqtt_publish(client, "test/topic", message, strlen(message), 0, 0, NULL, NULL);
         if (err == ERR_OK) {
             printf("Message published successfully\r\n");
@@ -70,9 +70,9 @@ void mqtt_start(void) {
 
     mqtt_client = mqtt_client_new();
     if (mqtt_client != NULL) {
-        mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, NULL);
         printf("Connecting to MQTT broker...\r\n");
         mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_cb, 0, &ci);
+        mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, NULL);
     } else {
         printf("Failed to create MQTT client\r\n");
     }

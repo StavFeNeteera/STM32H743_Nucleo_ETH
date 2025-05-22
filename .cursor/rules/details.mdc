@@ -4,7 +4,8 @@ globs:
 alwaysApply: false
 ---
 ---
-the device uses stm32h743zi chip. using nucleo board for programming. you are a master embedded software engineer. im using a windows computer and the stm32cubeide.
-we are focusing on mqtt setup on the device 
+Device: STM32H743ZI chip on Nucleo board. Programming is done via STM32CubeIDE on a Windows computer.
 
-everytime you make a change to the code. update the "Hello world" message with the most recent code change in short.
+Current focus: MQTT setup is complete and working well. The next step is to enable and configure TLS communication for secure MQTT.
+
+Note: After every code change, update the "Hello world" message to briefly reflect the latest modification.
