@@ -5,10 +5,9 @@
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
-
-//#define MQTT_BROKER_IP "10.5.1.95"
-#define MQTT_BROKER_IP "192.168.1.112"
-#define MQTT_BROKER_PORT 1883
+#include "mqtt_task.h"
+#include "lwip/altcp_tls.h"
+#include "mqtt_task.h"
 
 static mqtt_client_t *mqtt_client;
 
@@ -42,7 +41,8 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 static void mqtt_start_from_tcpip(void *arg)
 {
     printf("Starting MQTT connection from TCP/IP thread\r\n");
-    mqtt_start();
+//    mqtt_start();
+    mqtt_secure_connect();
 }
 
 static void netif_status_callback(struct netif *netif)
@@ -53,7 +53,7 @@ static void netif_status_callback(struct netif *netif)
         
         printf("IP address acquired: %s\n", ip_str);
         
-        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", MQTT_BROKER_IP, MQTT_BROKER_PORT);
+        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", BROKER_IP, SERVER_PORT_INT);
         tcpip_callback(mqtt_start_from_tcpip, NULL);
     }
 }
@@ -63,7 +63,7 @@ void mqtt_start(void) {
 
     ip_addr_t broker_ip;
     err_t err;
-    ipaddr_aton(MQTT_BROKER_IP, &broker_ip);
+    ipaddr_aton(BROKER_IP, &broker_ip);
 
     struct mqtt_connect_client_info_t ci;
     memset(&ci, 0, sizeof(ci));
@@ -73,7 +73,7 @@ void mqtt_start(void) {
     mqtt_client = mqtt_client_new();
     if (mqtt_client != NULL) {
         printf("Connecting to MQTT broker...\r\n");
-        mqtt_client_connect(mqtt_client, &broker_ip, MQTT_BROKER_PORT, mqtt_connection_cb, 0, &ci);
+        mqtt_client_connect(mqtt_client, &broker_ip, SERVER_PORT_INT, mqtt_connection_cb, 0, &ci);
         mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, NULL);
     } else {
         printf("Failed to create MQTT client\r\n");
