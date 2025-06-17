@@ -1,11 +1,13 @@
 #include "app.h"
 #include <stdio.h>
+#include <string.h>
 #include "lwip/apps/mqtt.h"
 #include "lwip/ip_addr.h"
 #include "lwip/netif.h"
 #include "lwip/tcpip.h"
 
-#define MQTT_BROKER_IP "10.5.1.95"
+//#define MQTT_BROKER_IP "10.5.1.95"
+#define MQTT_BROKER_IP "192.168.1.112"
 #define MQTT_BROKER_PORT 1883
 
 static mqtt_client_t *mqtt_client;
@@ -25,7 +27,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
         mqtt_sub_unsub(client, "test/topic", 0, NULL, NULL, 1);
 
         // Publish a message to the broker
-        const char *message = "Hello from STM32!!!";
+        const char *message = "Hello from STM32!";
         err_t err = mqtt_publish(client, "test/topic", message, strlen(message), 0, 0, NULL, NULL);
         if (err == ERR_OK) {
             printf("Message published successfully\r\n");
