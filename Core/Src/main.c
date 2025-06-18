@@ -375,6 +375,7 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  MX_LWIP_Init();
   printf("LWIP Init done\r\n");
 
   /* Initialize application */
