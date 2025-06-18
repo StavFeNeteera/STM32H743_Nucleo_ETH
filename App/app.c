@@ -56,7 +56,7 @@ static void netif_status_callback(struct netif *netif)
         
         printf("IP address acquired: %s\n", ip_str);
         
-        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", BROKER_IP, SERVER_PORT);
+        printf("Valid IP detected, connecting to MQTT broker at %s\r\n", BROKER_IP);
         tcpip_callback(mqtt_start_from_tcpip, NULL);
     }
 }
@@ -65,7 +65,6 @@ void mqtt_start(void) {
     printf("mqtt_start called\r\n");
 
     ip_addr_t broker_ip;
-    err_t err;
     ipaddr_aton(BROKER_IP, &broker_ip);
 
     struct mqtt_connect_client_info_t ci;

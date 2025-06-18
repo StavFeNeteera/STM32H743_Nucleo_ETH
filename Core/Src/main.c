@@ -52,6 +52,13 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for mqttTask */
+osThreadId_t mqttTaskHandle;
+const osThreadAttr_t mqttTask_attributes = {
+  .name = "mqttTask",
+  .stack_size = 2048 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 /* Retargets the C library printf function to the USART. */
 #include <stdio.h>
@@ -83,6 +90,7 @@ static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
+void StartMqttTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -165,6 +173,9 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of mqttTask */
+  mqttTaskHandle = osThreadNew(StartMqttTask, NULL, &mqttTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -384,6 +395,24 @@ void StartDefaultTask(void *argument)
   app_run(argument);
 
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartMqttTask */
+/**
+* @brief Function implementing the mqttTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartMqttTask */
+void StartMqttTask(void *argument)
+{
+  /* USER CODE BEGIN StartMqttTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartMqttTask */
 }
 
  /* MPU Configuration */
