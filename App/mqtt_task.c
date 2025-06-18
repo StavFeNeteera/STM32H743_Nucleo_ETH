@@ -106,6 +106,7 @@ const char *mosquitto_org_crt  =
 
 
 void mqtt_secure_connect(void) {
+//	printf("starting mqtt_secure_connect()\n");
     int ret;
     mbedtls_net_context net_ctx;
     mbedtls_ssl_context ssl;
@@ -187,7 +188,7 @@ void mqtt_secure_connect(void) {
     mbedtls_ssl_set_hostname(&ssl, SERVER_NAME); // Define SERVER_NAME as "test.mosquitto.org"
 
     // Connect to server
-    ret = mbedtls_net_connect(&net_ctx, SERVER_NAME, SERVER_PORT_STR, MBEDTLS_NET_PROTO_TCP);
+    ret = mbedtls_net_connect(&net_ctx, SERVER_NAME, SERVER_PORT, MBEDTLS_NET_PROTO_TCP);
     if (ret != 0) {
         printf("Failed net_connect: -0x%x\n", -ret);
         goto exit;

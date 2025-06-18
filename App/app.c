@@ -41,8 +41,11 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
 static void mqtt_start_from_tcpip(void *arg)
 {
     printf("Starting MQTT connection from TCP/IP thread\r\n");
-//    mqtt_start();
-    mqtt_secure_connect();
+#ifdef MQTTS
+	mqtt_secure_connect();
+# else
+    mqtt_start();
+#endif
 }
 
 static void netif_status_callback(struct netif *netif)
@@ -53,7 +56,7 @@ static void netif_status_callback(struct netif *netif)
         
         printf("IP address acquired: %s\n", ip_str);
         
-        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", BROKER_IP, SERVER_PORT_INT);
+        printf("Valid IP detected, connecting to MQTT broker at %s:%d\r\n", BROKER_IP, SERVER_PORT);
         tcpip_callback(mqtt_start_from_tcpip, NULL);
     }
 }
@@ -73,7 +76,7 @@ void mqtt_start(void) {
     mqtt_client = mqtt_client_new();
     if (mqtt_client != NULL) {
         printf("Connecting to MQTT broker...\r\n");
-        mqtt_client_connect(mqtt_client, &broker_ip, SERVER_PORT_INT, mqtt_connection_cb, 0, &ci);
+        mqtt_client_connect(mqtt_client, &broker_ip, SERVER_PORT, mqtt_connection_cb, 0, &ci);
         mqtt_set_inpub_callback(mqtt_client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, NULL);
     } else {
         printf("Failed to create MQTT client\r\n");

@@ -19,10 +19,16 @@
 //#define MQTT_BROKER_IP "192.168.1.112"
 #define MQTT_BROKER_PORT 1883
 
-
 #define BROKER_IP		"192.168.1.112"
-#define SERVER_PORT_STR "8883"
-#define SERVER_PORT_INT 8883
+
+#define MQTTS //changes port and function call
+
+
+#ifdef MQTTS
+#define SERVER_PORT "8883"
+#else
+#define SERVER_PORT 1883
+#endif
 
 void mqtt_secure_connect(void);
 

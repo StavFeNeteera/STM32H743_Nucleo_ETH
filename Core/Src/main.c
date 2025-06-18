@@ -140,7 +140,7 @@ int main(void)
   /* Call PreOsInit function */
   MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello World- debug mqtt_incoming_publish_cb\n");
+  printf("Hello World- added   MX_LWIP_Init\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
