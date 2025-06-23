@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "app.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,16 +45,35 @@
 
 UART_HandleTypeDef huart3;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
+osThreadId defaultTaskHandle;
+osThreadId mqttClientSubTaskHandle;
+osThreadId mqttClientPubTaskHandle;
 /* USER CODE BEGIN PV */
+
+extern uint32_t MilliTimer;
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MPU_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART3_UART_Init(void);
+void StartDefaultTask(void const * argument);
+void MqttClientSubTask(void const * argument);
+void mqttClientPubTask(void const * argument);
+
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
 /* Retargets the C library printf function to the USART. */
 #include <stdio.h>
+#include <string.h>
+
 #ifdef __GNUC__
 int __io_putchar(int ch)
 #else
@@ -75,21 +94,6 @@ int _write(int file,char *ptr, int len)
     return len;
 }
 #endif
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MPU_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART3_UART_Init(void);
-void StartDefaultTask(void *argument);
-
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
@@ -140,11 +144,8 @@ int main(void)
   /* Call PreOsInit function */
   MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello World- debug mqtt_incoming_publish_cb\n");
+  printf("Don't remove this printf to prevent hard fault.\r\n");
   /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -163,16 +164,19 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+
+  /* definition and creation of mqttClientSubTa */
+  osThreadDef(mqttClientSubTask, MqttClientSubTask, osPriorityNormal, 0, 512);
+
+  /* definition and creation of mqttClientPubTa */
+  osThreadDef(mqttClientPubTask, mqttClientPubTask, osPriorityNormal, 0, 512);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -372,17 +376,72 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-  printf("LWIP Init done\r\n");
+	MX_LWIP_Init();
+	while(1)
+	{
+		//waiting for valid ip address
+		if (gnetif.ip_addr.addr == 0 || gnetif.netmask.addr == 0 || gnetif.gw.addr == 0) //system has no valid ip address
+		{
+			osDelay(1000);
+			continue;
+		}
+		else
+		{
+			printf("DHCP/Static IP O.K.\n");
 
-  /* Initialize application */
-  app_init();
-  /* Run application task */
-  app_run(argument);
+			break;
+		}
 
-  /* USER CODE END 5 */
+	}
+
+	mqttClientSubTaskHandle = osThreadCreate(osThread(mqttClientSubTask), NULL);
+	mqttClientPubTaskHandle = osThreadCreate(osThread(mqttClientPubTask), NULL);
+	for(;;)
+	{
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);  // LED2 - Blue
+		osDelay(500);
+	}
+
+	/* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_MqttClientSubTask */
+/**
+* @brief Function implementing the mqttClientSubTa thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_MqttClientSubTask */
+void MqttClientSubTask(void const * argument)
+{
+  /* USER CODE BEGIN MqttClientSubTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END MqttClientSubTask */
+}
+
+/* USER CODE BEGIN Header_mqttClientPubTask */
+/**
+* @brief Function implementing the mqttClientPubTa thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_mqttClientPubTask */
+void mqttClientPubTask(void const * argument)
+{
+  /* USER CODE BEGIN mqttClientPubTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END mqttClientPubTask */
 }
 
  /* MPU Configuration */
@@ -455,6 +514,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+  if (htim->Instance == TIM6) {
+      MilliTimer++;
+  }
 
   /* USER CODE END Callback 1 */
 }
