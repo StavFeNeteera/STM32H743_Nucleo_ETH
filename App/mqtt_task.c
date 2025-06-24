@@ -106,7 +106,8 @@ const char *mosquitto_org_crt  =
 
 
 void mqtt_secure_connect(void) {
-//	printf("starting mqtt_secure_connect()\n");
+	printf("starting mqtt_secure_connect()\n");
+
     int ret;
     mbedtls_net_context net_ctx;
     mbedtls_ssl_context ssl;
@@ -116,98 +117,116 @@ void mqtt_secure_connect(void) {
     mbedtls_pk_context client_key;
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_entropy_context entropy;
-
     const char *pers = "mqtt_tls";
+    MX_LWIP_Init();
+//    mbedtls_net_init(&net_ctx);
 
-    // Initialize all MbedTLS structures
-    mbedtls_net_init(&net_ctx);
-    mbedtls_ssl_init(&ssl);
-    mbedtls_ssl_config_init(&conf);
-    mbedtls_x509_crt_init(&ca);
-    mbedtls_x509_crt_init(&client_cert);
-    mbedtls_pk_init(&client_key);
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-    mbedtls_entropy_init(&entropy);
+	printf("LWIP Init done\r\n");
+	while ( 1 )
+	{
+		//waiting for valid ip address
+		extern struct netif gnetif;
+		if  ( gnetif . ip_addr . addr ==  0  || gnetif . netmask . addr ==  0  || gnetif . gw . addr ==  0 )  //system has no valid ip address
+		{
+			osDelay ( 1000 ) ;
+			continue ;
+		}
+		else
+		{
+			printf ( "DHCP/Static IP OK\n" ) ;
+			break ;
+		}
+	}
 
-    // Seed the RNG
-    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
-                                 (const unsigned char *)pers, strlen(pers));
-    if (ret != 0) {
-        printf("Failed mbedtls_ctr_drbg_seed: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    // Parse in-memory PEM certificates and key
-    ret = mbedtls_x509_crt_parse(&ca,
-                (const unsigned char *)mosquitto_org_crt,
-                strlen(mosquitto_org_crt) + 1);
-    if (ret != 0) {
-        printf("Failed to parse CA cert: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    ret = mbedtls_x509_crt_parse(&client_cert,
-                (const unsigned char *)client_cert_pem,
-                strlen(client_cert_pem) + 1);
-    if (ret != 0) {
-        printf("Failed to parse client cert: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    ret = mbedtls_pk_parse_key(&client_key,
-                (const unsigned char *)client_key_pem,
-                strlen(client_key_pem) + 1,
-                NULL, 0);
-    if (ret != 0) {
-        printf("Failed to parse client key: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    // Configure SSL
-    ret = mbedtls_ssl_config_defaults(&conf,
-                MBEDTLS_SSL_IS_CLIENT,
-                MBEDTLS_SSL_TRANSPORT_STREAM,
-                MBEDTLS_SSL_PRESET_DEFAULT);
-    if (ret != 0) {
-        printf("Failed mbedtls_ssl_config_defaults: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
-    mbedtls_ssl_conf_ca_chain(&conf, &ca, NULL);
-    mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
-    mbedtls_ssl_conf_own_cert(&conf, &client_cert, &client_key);
-
-    // Setup SSL context
-    ret = mbedtls_ssl_setup(&ssl, &conf);
-    if (ret != 0) {
-        printf("Failed mbedtls_ssl_setup: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    mbedtls_ssl_set_hostname(&ssl, SERVER_NAME); // Define SERVER_NAME as "test.mosquitto.org"
-
-    // Connect to server
-    ret = mbedtls_net_connect(&net_ctx, SERVER_NAME, SERVER_PORT, MBEDTLS_NET_PROTO_TCP);
-    if (ret != 0) {
-        printf("Failed net_connect: -0x%x\n", -ret);
-        goto exit;
-    }
-
-    mbedtls_ssl_set_bio(&ssl, &net_ctx, mbedtls_net_send, mbedtls_net_recv, NULL);
-
-    // TLS handshake
-    while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
-        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-            printf("TLS handshake failed: -0x%x\n", -ret);
-            goto exit;
-        }
-    }
-
+//	LOCK_TCPIP_CORE();
+//    mbedtls_ssl_init(&ssl);
+//    mbedtls_ssl_config_init(&conf);
+//    mbedtls_x509_crt_init(&ca);
+//    mbedtls_x509_crt_init(&client_cert);
+//    mbedtls_pk_init(&client_key);
+//    mbedtls_ctr_drbg_init(&ctr_drbg);
+//    mbedtls_entropy_init(&entropy);
+//
+//
+//    // Seed the RNG
+//    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
+//                                 (const unsigned char *)pers, strlen(pers));
+//    if (ret != 0) {
+//        printf("Failed mbedtls_ctr_drbg_seed: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    // Parse in-memory PEM certificates and key
+//    ret = mbedtls_x509_crt_parse(&ca,
+//                (const unsigned char *)mosquitto_org_crt,
+//                strlen(mosquitto_org_crt) + 1);
+//    if (ret != 0) {
+//        printf("Failed to parse CA cert: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    ret = mbedtls_x509_crt_parse(&client_cert,
+//                (const unsigned char *)client_cert_pem,
+//                strlen(client_cert_pem) + 1);
+//    if (ret != 0) {
+//        printf("Failed to parse client cert: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    ret = mbedtls_pk_parse_key(&client_key,
+//                (const unsigned char *)client_key_pem,
+//                strlen(client_key_pem) + 1,
+//                NULL, 0);
+//    if (ret != 0) {
+//        printf("Failed to parse client key: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    // Configure SSL
+//    ret = mbedtls_ssl_config_defaults(&conf,
+//                MBEDTLS_SSL_IS_CLIENT,
+//                MBEDTLS_SSL_TRANSPORT_STREAM,
+//                MBEDTLS_SSL_PRESET_DEFAULT);
+//    if (ret != 0) {
+//        printf("Failed mbedtls_ssl_config_defaults: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    mbedtls_ssl_conf_authmode(&conf, MBEDTLS_SSL_VERIFY_REQUIRED);
+//    mbedtls_ssl_conf_ca_chain(&conf, &ca, NULL);
+//    mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
+//    mbedtls_ssl_conf_own_cert(&conf, &client_cert, &client_key);
+//
+//    // Setup SSL context
+//    ret = mbedtls_ssl_setup(&ssl, &conf);
+//    if (ret != 0) {
+//        printf("Failed mbedtls_ssl_setup: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    mbedtls_ssl_set_hostname(&ssl, SERVER_NAME); // Define SERVER_NAME as "test.mosquitto.org"
+//
+//    // Connect to server
+//    ret = mbedtls_net_connect(&net_ctx, SERVER_NAME, SERVER_PORT, MBEDTLS_NET_PROTO_TCP);
+//    if (ret != 0) {
+//        printf("Failed net_connect: -0x%x\n", -ret);
+//        goto exit;
+//    }
+//
+//    mbedtls_ssl_set_bio(&ssl, &net_ctx, mbedtls_net_send, mbedtls_net_recv, NULL);
+//
+//    // TLS handshake
+//    while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
+//        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+//            printf("TLS handshake failed: -0x%x\n", -ret);
+//            goto exit;
+//        }
+//    }
+//
     printf("TLS handshake successful.\n");
-
-    // TODO: Send MQTT CONNECT here using mbedtls_ssl_write()
-
+    UNLOCK_TCPIP_CORE();
+//    // TODO: Send MQTT CONNECT here using mbedtls_ssl_write()
+//
 exit:
     mbedtls_ssl_free(&ssl);
     mbedtls_ssl_config_free(&conf);

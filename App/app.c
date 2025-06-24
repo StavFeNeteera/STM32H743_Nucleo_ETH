@@ -84,12 +84,16 @@ void mqtt_start(void) {
 
 void app_init(void)
 {
-
+#ifdef MQTTS
+	mqtt_secure_connect();
+# else
+    mqtt_start();
+#endif
     /* Register callback for network interface status changes */
-    LOCK_TCPIP_CORE();
-    netif_set_status_callback(netif_default, netif_status_callback);
-    UNLOCK_TCPIP_CORE();
-    printf("Waiting for network interface to be ready...\r\n");
+//    LOCK_TCPIP_CORE();
+//    netif_set_status_callback(netif_default, netif_status_callback);
+//    UNLOCK_TCPIP_CORE();
+//    printf("Waiting for network interface to be ready...\r\n");
 }
 
 void app_run(void *argument)
@@ -114,9 +118,9 @@ void app_run(void *argument)
     for(;;)
     {
         /* Toggle all LEDs using direct GPIO pins */
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // LED1 - Green
+//        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);  // LED1 - Green
         HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);  // LED2 - Blue
-        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // LED3 - Red
+//        HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14); // LED3 - Red
 
         osDelay(1000);
     }

@@ -43,6 +43,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+RNG_HandleTypeDef hrng;
+
 UART_HandleTypeDef huart3;
 
 /* Definitions for defaultTask */
@@ -52,12 +54,19 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for mqttTask */
-osThreadId_t mqttTaskHandle;
-const osThreadAttr_t mqttTask_attributes = {
-  .name = "mqttTask",
+/* Definitions for mqttSubTask */
+osThreadId_t mqttSubTaskHandle;
+const osThreadAttr_t mqttSubTask_attributes = {
+  .name = "mqttSubTask",
   .stack_size = 2048 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for mqttPubTask */
+osThreadId_t mqttPubTaskHandle;
+const osThreadAttr_t mqttPubTask_attributes = {
+  .name = "mqttPubTask",
+  .stack_size = 2048 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
 /* Retargets the C library printf function to the USART. */
@@ -89,8 +98,10 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_RNG_Init(void);
 void StartDefaultTask(void *argument);
-void StartMqttTask(void *argument);
+void StartMqttSubTask(void *argument);
+void StartMqttPubTaskx(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -145,6 +156,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+  MX_RNG_Init();
   /* Call PreOsInit function */
   MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
@@ -174,8 +186,11 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of mqttTask */
-  mqttTaskHandle = osThreadNew(StartMqttTask, NULL, &mqttTask_attributes);
+  /* creation of mqttSubTask */
+  mqttSubTaskHandle = osThreadNew(StartMqttSubTask, NULL, &mqttSubTask_attributes);
+
+  /* creation of mqttPubTask */
+  mqttPubTaskHandle = osThreadNew(StartMqttPubTaskx, NULL, &mqttPubTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -223,8 +238,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 2;
@@ -257,6 +273,33 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RNG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RNG_Init(void)
+{
+
+  /* USER CODE BEGIN RNG_Init 0 */
+
+  /* USER CODE END RNG_Init 0 */
+
+  /* USER CODE BEGIN RNG_Init 1 */
+
+  /* USER CODE END RNG_Init 1 */
+  hrng.Instance = RNG;
+  hrng.Init.ClockErrorDetection = RNG_CED_ENABLE;
+  if (HAL_RNG_Init(&hrng) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RNG_Init 2 */
+
+  /* USER CODE END RNG_Init 2 */
+
 }
 
 /**
@@ -386,33 +429,50 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  MX_LWIP_Init();
-  printf("LWIP Init done\r\n");
 
+	mqtt_secure_connect();
   /* Initialize application */
-  app_init();
+//  app_init();
   /* Run application task */
   app_run(argument);
 
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartMqttTask */
+/* USER CODE BEGIN Header_StartMqttSubTask */
 /**
-* @brief Function implementing the mqttTask thread.
+* @brief Function implementing the mqttSubTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartMqttTask */
-void StartMqttTask(void *argument)
+/* USER CODE END Header_StartMqttSubTask */
+void StartMqttSubTask(void *argument)
 {
-  /* USER CODE BEGIN StartMqttTask */
+  /* USER CODE BEGIN StartMqttSubTask */
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
-  /* USER CODE END StartMqttTask */
+  /* USER CODE END StartMqttSubTask */
+}
+
+/* USER CODE BEGIN Header_StartMqttPubTaskx */
+/**
+* @brief Function implementing the mqttPubTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartMqttPubTaskx */
+void StartMqttPubTaskx(void *argument)
+{
+  /* USER CODE BEGIN StartMqttPubTaskx */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartMqttPubTaskx */
 }
 
  /* MPU Configuration */
